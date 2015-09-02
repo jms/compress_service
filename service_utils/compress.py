@@ -81,6 +81,7 @@ def compress_files(case_id):
     base_name = 'lookagaindoc_' + case_id
     save_dir = os.path.join(save_path, base_name)
     zip_file = shutil.make_archive(base_name, 'zip', save_dir, save_path)
+    print zip_file
     return zip_file
 
 

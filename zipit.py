@@ -79,14 +79,14 @@ class CompressResources:
             """
 
             case_id = data.get('id', None)
-            file_list = data.get('file_list', None)
+            file_list = data.get('files', None)
             bucket_name = data.get('bucket', None)
 
             if case_id is not None and file_list is not None and bucket_name is not None:
                 self.q.enqueue(compress.process_data, case_id, file_list, bucket_name)
                 # response ok, task received
                 resp.body = json.dumps(
-                    {"message": "Compression started, app will be notified via Pubnub when the task is complete"})
+                    {"message": "Compression task started, App will be notified via Pubnub when the task is complete"})
                 resp.status = falcon.HTTP_200
             else:
                 raise falcon.HTTPBadRequest('Invalid Data',
@@ -107,6 +107,8 @@ zip_it = CompressResources()
 
 app.add_route('/compress', zip_it)
 
+"""
 if __name__ == '__main__':
     httpd = simple_server.make_server('127.0.0.1', 8000, app)
     httpd.serve_forever()
+"""

@@ -57,17 +57,19 @@ def download_files(case_id, file_list, bucket_name):
         os.makedirs(save_dir)
 
     # s3 = boto3.resource('s3')
-    client = boto3.client('s3')  # check
+    client = boto3.client('s3')
     transfer = S3Transfer(client)
     try:
         if check_files(file_list, bucket_name):
             for item in file_list:
+                print item
                 transfer.download_file(bucket_name, item, os.path.join(save_dir, item))
                 # true/false depend operation success/fail
         else:
             print 'check_files fails'
             download_ok = False
     except Exception as error:
+        print error
         download_ok = False
 
     return download_ok

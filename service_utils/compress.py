@@ -47,7 +47,7 @@ def check_files(file_list, bucket_name):
     return exists
 
 
-def download_files(case_id, file_list, bucket_name):
+def download_files(case_id, file_list, bucket_name, base_name):
     # create a tmp dir > case_id, download files
     # check_files
     save_path = '/tmp'
@@ -62,8 +62,8 @@ def download_files(case_id, file_list, bucket_name):
     try:
         if check_files(file_list, bucket_name):
             for item in file_list:
-                print item
-                transfer.download_file(bucket_name, item, os.path.join(save_dir, item))
+                save_item_name = os.path.join(save_dir, item.replace(base_name, ''))
+                transfer.download_file(bucket_name, item, save_item_name)
                 # true/false depend operation success/fail
         else:
             print 'check_files fails'
@@ -102,9 +102,9 @@ def upload_zip(case_id, zip_file, bucket_name):
     return zip_file
 
 
-def process_data(case_id, file_list, bucket_name):
+def process_data(case_id, file_list, bucket_name, base_name):
     print 'process data called'
-    if download_files(case_id, file_list, bucket_name):
+    if download_files(case_id, file_list, bucket_name, base_name):
         zip_file_name = compress_files(case_id)
         zip_key = upload_zip(case_id, zip_file_name, bucket_name)
         # time.sleep(5)

@@ -117,9 +117,8 @@ def process_data(case_id, file_list, bucket_name, base_name):
         zip_key = upload_zip(case_id, zip_file_name, bucket_name, base_name)
         # time.sleep(5)
         msg = json.dumps({'case_id': case_id, 'zip_file': zip_key})
-        pbn = notify.start_pubnub()
-        pbn.publish('service_channel', msg, callback=notify.callback, error=notify.error)
-        
+        # pbn = notify.start_pubnub()
+        # pbn.publish('service_channel', msg, callback=notify.callback, error=notify.error)
         # notify.callback(json.dumps({'case_id': case_id, 'zip_file': zip_key}), 'service_channel')
         # notify.connect(pbn, json.dumps({'case_id': case_id, 'zip_file': zip_key}))
     else:

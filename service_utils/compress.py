@@ -1,4 +1,5 @@
-import time
+import json
+# import time
 import shutil
 
 import boto3
@@ -94,6 +95,6 @@ def process_data(case_id, file_list, bucket_name):
         zip_key = upload_zip(case_id, zip_file_name, bucket_name)
         # time.sleep(5)
         pbn = notify.start_pubnub()
-        notify.connect(pbn, {'case_id': case_id, 'zip_file': zip_key})
-    else:
+        notify.connect(pbn, json.dumps({'case_id': case_id, 'zip_file': zip_key)})
+    else
         print 'fail to download files'

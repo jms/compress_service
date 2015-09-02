@@ -1,4 +1,4 @@
-bind = '0.0.0.0:8000'
+bind = '0.0.0.0:80'
 backlog = 2048
 workers = 1
 worker_class = 'sync'

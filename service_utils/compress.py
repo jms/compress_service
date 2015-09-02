@@ -74,7 +74,7 @@ def compress_files(case_id):
     save_path = '/tmp'
     base_name = 'lookagaindoc_' + case_id
     save_dir = os.path.join(save_path, base_name)
-    zip_file = shutil.make_archive(base_name, 'zip', save_dir)
+    zip_file = shutil.make_archive(base_name, 'zip', save_dir, save_path)
     return zip_file
 
 
@@ -84,7 +84,15 @@ def upload_zip(case_id, zip_file, bucket_name):
     save_dir = os.path.join(save_path, base_name)
     client = boto3.client('s3')  # check
     transfer = S3Transfer(client)
-    transfer.upload_file(os.path.join(save_dir, zip_file), bucket_name, zip_file)
+    transfer.upload_file(os.path.join(save_path, zip_file), bucket_name, zip_file)
+    # delete dir
+    # shutil.rmtree(save_dir)
+    # delete file
+    # try:
+    #     os.remove(os.path.join(save_path, zip_file))
+    # except OSError:
+    #     print 'fail to delete file'
+    #
     return zip_file
 
 

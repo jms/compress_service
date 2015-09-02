@@ -81,7 +81,7 @@ class CompressResources:
             case_id = data.get('id', None)
             file_list = data.get('files', None)
             bucket_name = data.get('bucket', None)
-            base_name = data.get('base_name', None)
+            base_name = data.get('prefix', None)
 
             if case_id is not None and file_list is not None and bucket_name is not None:
                 self.q.enqueue(compress.process_data, case_id, file_list, bucket_name, base_name)

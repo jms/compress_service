@@ -54,6 +54,7 @@ def download_files(case_id, file_list, bucket_name, base_name):
     save_dir = os.path.join(save_path, 'lookagaindoc_' + case_id)
     download_ok = True
     if not os.path.exists(save_dir):
+        os.umask(000)
         os.makedirs(save_dir)
 
     # s3 = boto3.resource('s3')

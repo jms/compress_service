@@ -36,10 +36,13 @@ def check_files(file_list, bucket_name):
         # we can continue and verify the files exists
         for k in bucket.objects.all():
             if k.key in file_list:
+                print k.key
                 s3_key_list.append(k.key)
 
     if set(file_list) != set(s3_key_list):
         exists = False
+    else:
+        print 'file are the same'
 
     return exists
 
@@ -62,6 +65,7 @@ def download_files(case_id, file_list, bucket_name):
                 transfer.download_file(bucket_name, item, os.path.join(save_dir, item))
                 # true/false depend operation success/fail
         else:
+            print 'check_files fails'
             download_ok = False
     except Exception as error:
         download_ok = False

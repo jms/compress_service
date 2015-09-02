@@ -1,14 +1,11 @@
 import falcon
 import logging
 import json
-import pprint
 from wsgiref import simple_server
 
 from rq import Queue
 from redis import Redis
-from service_utils import compress, notify
-
-
+from service_utils import compress
 
 
 def max_body(limit):
@@ -85,12 +82,15 @@ class CompressResources:
             file_list = data.get('file_list', None)
             bucket_name = data.get('bucket', None)
 
-            job = self.q.enqueue(compress.process_data, case_id, file_list, bucket_name)
-
-            # response ok, task received
-            resp.body = json.dumps(
-                {"message": "Compression started, app will be notified via Pubnub when the task is complete"})
-            resp.status = falcon.HTTP_200
+            if case_id is not None and file_list is not None and bucket_name is not None:
+                self.q.enqueue(compress.process_data, case_id, file_list, bucket_name)
+                # response ok, task received
+                resp.body = json.dumps(
+                    {"message": "Compression started, app will be notified via Pubnub when the task is complete"})
+                resp.status = falcon.HTTP_200
+            else:
+                raise falcon.HTTPBadRequest('Invalid Data',
+                                            'Information required not available')
 
         except (ValueError, UnicodeDecodeError):
             raise falcon.HTTPError(falcon.HTTP_753,

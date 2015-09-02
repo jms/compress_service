@@ -1,13 +1,14 @@
 import falcon
 import logging
 import json
+import pprint
 from wsgiref import simple_server
 
-__author__ = 'jms'
+from rq import Queue
+from redis import Redis
+from service_utils import compress, notify
 
 
-# import uuid
-# import requests
 
 
 def max_body(limit):
@@ -23,15 +24,29 @@ def max_body(limit):
     return hook
 
 
-class JSONTranslator(object):
-    def process_request(self, req, resp):
+class CompressResources:
+    def __init__(self):
+        self.logger = logging.getLogger('compress_it. ' + __name__)
+        redis_conn = Redis()
+        self.q = Queue('default', connection=redis_conn)
+
+    @falcon.before(max_body(64 * 1024))
+    def on_get(self, req, resp):
+        resp.body = json.dumps({"message": "Compression service demo"})
+        resp.content_type = "application/json"
+        resp.set_header('X-Powered-By', 'jms')
+        resp.status = falcon.HTTP_200
+
+    @falcon.before(max_body(64 * 1024))
+    def on_post(self, req, resp):
+        # parse json, call module compress and notify
         # req.stream corresponds to the WSGI wsgi.input environ variable,
         # and allows you to read bytes from the request body.
         #
         # See also: PEP 3333
         if req.content_length in (None, 0):
-            # Nothing to do
-            return
+            raise falcon.HTTPBadRequest('Empty request body',
+                                        'A valid JSON document is required.')
 
         body = req.stream.read()
         if not body:
@@ -39,7 +54,43 @@ class JSONTranslator(object):
                                         'A valid JSON document is required.')
 
         try:
-            req.context['doc'] = json.loads(body.decode('utf-8'))
+            data = json.loads(body.decode('utf-8'))
+
+            # check security sample
+            """
+            token = req.get_header('X-Auth-Token')
+            if token is None:
+            description = ('Please provide an auth token '
+                           'as part of the request.')
+
+                raise falcon.HTTPUnauthorized('Auth token required',
+                                          description,
+                                          href='http://docs.example.com/auth')
+
+            if not self._token_is_valid(token, project):
+                description = ('The provided auth token is not valid. '
+                               'Please request a new token and try again.')
+
+                raise falcon.HTTPUnauthorized('Authentication required',
+                                              description,
+                                              href='http://docs.example.com/auth',
+                                              scheme='Token; UUID')
+
+            def _token_is_valid(self, token, project):
+                return True  # Suuuuuure it's valid...
+
+            """
+
+            case_id = data.get('id', None)
+            file_list = data.get('file_list', None)
+            bucket_name = data.get('bucket', None)
+
+            job = self.q.enqueue(compress.process_data, case_id, file_list, bucket_name)
+
+            # response ok, task received
+            resp.body = json.dumps(
+                {"message": "Compression started, app will be notified via Pubnub when the task is complete"})
+            resp.status = falcon.HTTP_200
 
         except (ValueError, UnicodeDecodeError):
             raise falcon.HTTPError(falcon.HTTP_753,
@@ -47,31 +98,6 @@ class JSONTranslator(object):
                                    'Could not decode the request body. The '
                                    'JSON was incorrect or not encoded as '
                                    'UTF-8.')
-
-    def process_response(self, req, resp, resource):
-        if 'result' not in req.context:
-            return
-
-        resp.body = json.dumps(req.context['result'])
-
-
-class CompressResources:
-    def __init__(self):
-        self.logger = logging.getLogger('compress_it. ' + __name__)
-
-    @falcon.before(max_body(64 * 1024))
-    def on_get(self, req, resp):
-        resp.body = '{"message": "Compression service demo"}'
-        resp.status = falcon.HTTP_200
-
-    @falcon.before(max_body(64 * 1024))
-    def on_post(self, req, resp):
-        # parse json, call module compress and notify
-
-        # response ok, task received
-        resp.body = '{"message": "Compression started, app will be notified via Pubnub when the task is complete"}'
-        resp.status = falcon.HTTP_200
-        pass
 
 
 # falcon.API instances are callable WSGI apps

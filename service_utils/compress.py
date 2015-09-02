@@ -1,10 +1,7 @@
-__author__ = 'jms'
 import boto3
 import zipfile
+import time
 
-# queue settings
-from rq import Queue
-from redis import Redis
 
 def check_files(file_list, bucket_name):
     s3 = boto3.resource('s3')
@@ -25,16 +22,28 @@ def check_files(file_list, bucket_name):
     return exists
 
 
-def download_files(case_id, file_list):
+def download_files(case_id, file_list, bucket_name):
     # create a tmp dir > case_id, download files
+    # check_files
     pass
 
 
 def compress_files(case_id, file_list):
     # change to dir, compress files
-    pass
+    zip_file = ''
+    return zip_file
 
 
 def upload_zip(zip_file):
     # upload to s3, return key
-    pass
+    zip_file_name = ''
+    return zip_file_name
+
+
+def process_data(case_id, file_list, bucket_name):
+    print 'process data called'
+    download_files(case_id, file_list, bucket_name)
+    zip_file_name = compress_files(case_id, file_list)
+    zip_key = upload_zip(zip_file_name)
+    time.sleep(5)
+    return zip_key

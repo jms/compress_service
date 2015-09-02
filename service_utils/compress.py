@@ -80,7 +80,7 @@ def compress_files(case_id):
     save_path = '/tmp'
     base_name = 'lookagaindoc_' + case_id
     save_dir = os.path.join(save_path, base_name)
-    zip_file = shutil.make_archive(base_name, 'zip', save_dir, save_path)
+    zip_file = shutil.make_archive(save_dir, 'zip', save_dir)
     print zip_file
     return zip_file
 
@@ -89,6 +89,7 @@ def upload_zip(case_id, zip_file, bucket_name):
     save_path = '/tmp'
     base_name = 'lookagaindoc_' + case_id
     save_dir = os.path.join(save_path, base_name)
+    print 'file to upload: ', zip_file
     client = boto3.client('s3')  # check
     transfer = S3Transfer(client)
     transfer.upload_file(os.path.join(save_path, zip_file), bucket_name, zip_file)

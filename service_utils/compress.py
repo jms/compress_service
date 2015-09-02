@@ -79,20 +79,26 @@ def compress_files(case_id):
     # change to dir, compress files
     save_path = '/tmp'
     base_name = 'lookagaindoc_' + case_id
+    prefix = os.path.join(save_path, base_name)
     save_dir = os.path.join(save_path, base_name)
-    zip_file = shutil.make_archive(save_dir, 'zip', save_dir)
+    # /tmp/filename.zip, tmp/case_id/
+    zip_file = shutil.make_archive(prefix, 'zip', save_dir)
     print zip_file
     return zip_file
 
 
-def upload_zip(case_id, zip_file, bucket_name):
+def upload_zip(case_id, zip_file, bucket_name, prefix):
     save_path = '/tmp'
     base_name = 'lookagaindoc_' + case_id
     save_dir = os.path.join(save_path, base_name)
-    print 'file to upload: ', zip_file
+
+    zip_key = os.path.join(prefix, os.path.basename(zip_file))
+    print 'file to upload: ',  zip_key
+
     client = boto3.client('s3')  # check
     transfer = S3Transfer(client)
-    transfer.upload_file(os.path.join(save_path, zip_file), bucket_name, zip_file)
+    transfer.upload_file(os.path.join(save_path, zip_file), bucket_name, zip_key)
+
     # delete dir
     # shutil.rmtree(save_dir)
     # delete file
@@ -108,9 +114,13 @@ def process_data(case_id, file_list, bucket_name, base_name):
     print 'process data called'
     if download_files(case_id, file_list, bucket_name, base_name):
         zip_file_name = compress_files(case_id)
-        zip_key = upload_zip(case_id, zip_file_name, bucket_name)
+        zip_key = upload_zip(case_id, zip_file_name, bucket_name, base_name)
         # time.sleep(5)
+        msg = json.dumps({'case_id': case_id, 'zip_file': zip_key})
         pbn = notify.start_pubnub()
-        notify.connect(pbn, json.dumps({'case_id': case_id, 'zip_file': zip_key}))
+        pbn.publish('service_channel', msg, callback=notify.callback, error=notify.error)
+        
+        # notify.callback(json.dumps({'case_id': case_id, 'zip_file': zip_key}), 'service_channel')
+        # notify.connect(pbn, json.dumps({'case_id': case_id, 'zip_file': zip_key}))
     else:
         print 'fail to download files'

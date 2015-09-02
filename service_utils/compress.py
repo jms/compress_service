@@ -92,7 +92,7 @@ def process_data(case_id, file_list, bucket_name):
     if download_files(case_id, file_list, bucket_name):
         zip_file_name = compress_files(case_id)
         zip_key = upload_zip(case_id, zip_file_name, bucket_name)
-        time.sleep(5)
+        # time.sleep(5)
         pbn = notify.start_pubnub()
         notify.connect(pbn, {'case_id': case_id, 'zip_file': zip_key})
     else:

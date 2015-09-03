@@ -109,8 +109,7 @@ zip_it = CompressResources()
 
 app.add_route('/compress', zip_it)
 
-"""
+
 if __name__ == '__main__':
     httpd = simple_server.make_server('0.0.0.0', 8000, app)
     httpd.serve_forever()
-"""

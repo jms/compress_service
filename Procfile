@@ -1,3 +1,3 @@
-web:  waitress-serve  zipit:app 
-worker: python -u run-worker.py
+web:  python zipit.py 
+worker: python run-worker.py
 

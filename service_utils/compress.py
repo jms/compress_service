@@ -1,5 +1,4 @@
 import json
-# import time
 import shutil
 from pubnub import Pubnub
 import boto3
@@ -7,7 +6,6 @@ from boto3.s3.transfer import S3Transfer
 import os
 from botocore.exceptions import ClientError
 
-# from zipfile_infolist import print_info
 
 def bucket_lookup(bucket_name):
     s3 = boto3.resource('s3')

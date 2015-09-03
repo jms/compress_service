@@ -1,3 +1,3 @@
-web: gunicorn --pythonpath .  zipit:app --log-file=-
+web:  waitress-serve  zipit:app 
 worker: python -u run-worker.py
 

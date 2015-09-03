@@ -3,6 +3,7 @@ import logging
 import json
 from wsgiref import simple_server
 import os
+import urlparse
 from rq import Queue
 from redis import Redis
 from service_utils import compress

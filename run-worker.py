@@ -3,7 +3,7 @@ import urlparse
 from redis import Redis
 from rq import Worker, Queue, Connection
 
-listen = ['high', 'default', 'low']
+listen = ['default']
 
 redis_url = os.getenv('REDISTOGO_URL')
 if not redis_url:

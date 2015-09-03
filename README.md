@@ -21,5 +21,14 @@ test with httpie:
 test plain without nginx
 
     cd compress_service 
-    sudo DEBUG=0 authbind  gunicorn zipit:app -b 0.0.0.0:80
+    sudo authbind  gunicorn zipit:app -b 0.0.0.0:80 --log-level debug --user 1000 
+
+    # or 
+
+    gunicorn zipit:app -b 0.0.0.0:8000 --log-level debug --user 1000 
+    
+    
+test data 
+
+    http POST http://server:8000/compress < test_data.json
 

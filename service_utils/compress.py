@@ -108,7 +108,7 @@ def upload_zip(case_id, zip_file, bucket_name, prefix):
     except OSError:
         print 'fail to delete file: ', zip_file
 
-    return zip_file
+    return zip_key
 
 
 def notify(msg):
@@ -128,8 +128,7 @@ def process_data(case_id, file_list, bucket_name, base_name):
     if download_files(case_id, file_list, bucket_name, base_name):
         zip_file_name = compress_files(case_id)
         zip_key = upload_zip(case_id, zip_file_name, bucket_name, base_name)
-        # time.sleep(5)
-        msg = json.dumps({'case_id': case_id, 'zip_file': zip_key})
+        msg = json.dumps({'id': case_id, 'zip_file': zip_key}, sort_keys=True)
         notify(msg)
     else:
         print 'fail to download files'

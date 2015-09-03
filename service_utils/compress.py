@@ -1,14 +1,11 @@
 import json
 # import time
 import shutil
-
+from pubnub import Pubnub
 import boto3
 from boto3.s3.transfer import S3Transfer
 import os
 from botocore.exceptions import ClientError
-
-from service_utils import notify
-
 
 # from zipfile_infolist import print_info
 
@@ -42,7 +39,7 @@ def check_files(file_list, bucket_name):
     if set(file_list) != set(s3_key_list):
         exists = False
     else:
-        print 'file are the same'
+        print 'file list match'
 
     return exists
 
@@ -51,7 +48,7 @@ def download_files(case_id, file_list, bucket_name, base_name):
     # create a tmp dir > case_id, download files
     # check_files
     save_path = '/tmp'
-    save_dir = os.path.join(save_path, 'lookagaindoc_' + case_id)
+    save_dir = os.path.join(save_path, 'case_' + case_id)
     download_ok = True
     if not os.path.exists(save_dir):
         os.umask(000)
@@ -67,7 +64,7 @@ def download_files(case_id, file_list, bucket_name, base_name):
                 transfer.download_file(bucket_name, item, save_item_name)
                 # true/false depend operation success/fail
         else:
-            print 'check_files fails'
+            print 'check_files fail'
             download_ok = False
     except Exception as error:
         print error
@@ -79,36 +76,51 @@ def download_files(case_id, file_list, bucket_name, base_name):
 def compress_files(case_id):
     # change to dir, compress files
     save_path = '/tmp'
-    base_name = 'lookagaindoc_' + case_id
+    base_name = 'case_' + case_id
     prefix = os.path.join(save_path, base_name)
     save_dir = os.path.join(save_path, base_name)
     # /tmp/filename.zip, tmp/case_id/
     zip_file = shutil.make_archive(prefix, 'zip', save_dir)
-    print zip_file
+    # print zip_file
     return zip_file
 
 
 def upload_zip(case_id, zip_file, bucket_name, prefix):
     save_path = '/tmp'
-    base_name = 'lookagaindoc_' + case_id
+    base_name = 'case_' + case_id
     save_dir = os.path.join(save_path, base_name)
 
     zip_key = os.path.join(prefix, os.path.basename(zip_file))
-    print 'file to upload: ',  zip_key
+    print 'file to upload: ', zip_key
 
     client = boto3.client('s3')  # check
     transfer = S3Transfer(client)
-    transfer.upload_file(os.path.join(save_path, zip_file), bucket_name, zip_key)
+    transfer.upload_file(zip_file, bucket_name, zip_key)
 
     # delete dir
-    # shutil.rmtree(save_dir)
+    print 'removing dir: ', save_dir
+    shutil.rmtree(save_dir)
+
     # delete file
-    # try:
-    #     os.remove(os.path.join(save_path, zip_file))
-    # except OSError:
-    #     print 'fail to delete file'
-    #
+    try:
+        print 'removing file: ', zip_file
+        os.remove(zip_file)
+    except OSError:
+        print 'fail to delete file: ', zip_file
+
     return zip_file
+
+
+def notify(msg):
+    pubnub = Pubnub(
+        publish_key="pub-c-175764f3-155a-4678-adba-948f6a350717",
+        subscribe_key="sub-c-f75f9c02-517c-11e5-85f6-0619f8945a4f",
+        pooling=False
+    )
+    channel = 'service_channel'
+
+    # Synchronous usage
+    print pubnub.publish(channel, msg)
 
 
 def process_data(case_id, file_list, bucket_name, base_name):
@@ -118,9 +130,6 @@ def process_data(case_id, file_list, bucket_name, base_name):
         zip_key = upload_zip(case_id, zip_file_name, bucket_name, base_name)
         # time.sleep(5)
         msg = json.dumps({'case_id': case_id, 'zip_file': zip_key})
-        # pbn = notify.start_pubnub()
-        # pbn.publish('service_channel', msg, callback=notify.callback, error=notify.error)
-        # notify.callback(json.dumps({'case_id': case_id, 'zip_file': zip_key}), 'service_channel')
-        # notify.connect(pbn, json.dumps({'case_id': case_id, 'zip_file': zip_key}))
+        notify(msg)
     else:
         print 'fail to download files'

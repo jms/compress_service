@@ -58,33 +58,12 @@ class CompressResources:
             raise falcon.HTTPBadRequest('Empty request body',
                                         'A valid JSON document is required.')
 
+        resp.body = json.dumps(
+            {"message": "Compression task started, App will be notified via Pubnub when the task is complete"})
+        resp.status = falcon.HTTP_200
+        """
         try:
             data = json.loads(body.decode('utf-8'))
-
-            # check security sample
-            """
-            token = req.get_header('X-Auth-Token')
-            if token is None:
-            description = ('Please provide an auth token '
-                           'as part of the request.')
-
-                raise falcon.HTTPUnauthorized('Auth token required',
-                                          description,
-                                          href='http://docs.example.com/auth')
-
-            if not self._token_is_valid(token, project):
-                description = ('The provided auth token is not valid. '
-                               'Please request a new token and try again.')
-
-                raise falcon.HTTPUnauthorized('Authentication required',
-                                              description,
-                                              href='http://docs.example.com/auth',
-                                              scheme='Token; UUID')
-
-            def _token_is_valid(self, token, project):
-                return True  # Suuuuuure it's valid...
-
-            """
 
             case_id = data.get('id', None)
             file_list = data.get('files', None)
@@ -108,6 +87,7 @@ class CompressResources:
                                    'Could not decode the request body. The '
                                    'JSON was incorrect or not encoded as '
                                    'UTF-8.')
+        """
 
 
 # falcon.API instances are callable WSGI apps

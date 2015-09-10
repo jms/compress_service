@@ -2,7 +2,8 @@ import falcon
 import logging
 import json
 from wsgiref import simple_server
-
+import os
+import urlparse
 from rq import Queue
 from redis import Redis
 from service_utils import compress
@@ -24,8 +25,13 @@ def max_body(limit):
 class CompressResources:
     def __init__(self):
         self.logger = logging.getLogger('compress_it. ' + __name__)
-        redis_conn = Redis()
-        self.q = Queue('default', connection=redis_conn)
+        redis_url = os.getenv('REDIS_URL')
+        if not redis_url:
+            raise RuntimeError('Set up Redis first.')
+        urlparse.uses_netloc.append('redis')
+        url = urlparse.urlparse(redis_url)
+        conn = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
+        self.q = Queue('default', connection=conn)
 
     @falcon.before(max_body(64 * 1024))
     def on_get(self, req, resp):

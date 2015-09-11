@@ -126,7 +126,7 @@ def process_data(case_id, file_list, bucket_name, base_name):
     if download_files(case_id, file_list, bucket_name, base_name):
         zip_file_name = compress_files(case_id)
         zip_key = upload_zip(case_id, zip_file_name, bucket_name, base_name)
-        msg = json.dumps({'id': case_id, 'zip_file': zip_key}, sort_keys=True)
+        msg = {'id': case_id, 'zip_file': zip_key}
         notify(msg)
     else:
         print 'fail to download files'

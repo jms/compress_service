@@ -111,9 +111,9 @@ def upload_zip(case_id, zip_file, bucket_name, prefix):
 
 def notify(msg):
     pubnub = Pubnub(
-        publish_key=os.getenv('PUBLISH_KEY'),
-        subscribe_key=os.getenv('SUBSCRIBE_KEY'),
-        pooling=False
+            publish_key=os.getenv('PUBLISH_KEY'),
+            subscribe_key=os.getenv('SUBSCRIBE_KEY'),
+            pooling=False
     )
     channel = 'service_channel'
 

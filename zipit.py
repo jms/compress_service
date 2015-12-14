@@ -17,7 +17,7 @@ def max_body(limit):
                    'exceed ' + str(limit) + ' bytes in length.')
 
             raise falcon.HTTPRequestEntityTooLarge(
-                'Request body is too large', msg)
+                    'Request body is too large', msg)
 
     return hook
 
@@ -59,31 +59,6 @@ class CompressResources:
         try:
             data = json.loads(body.decode('utf-8'))
 
-            # check security sample
-            """
-            token = req.get_header('X-Auth-Token')
-            if token is None:
-            description = ('Please provide an auth token '
-                           'as part of the request.')
-
-                raise falcon.HTTPUnauthorized('Auth token required',
-                                          description,
-                                          href='http://docs.example.com/auth')
-
-            if not self._token_is_valid(token, project):
-                description = ('The provided auth token is not valid. '
-                               'Please request a new token and try again.')
-
-                raise falcon.HTTPUnauthorized('Authentication required',
-                                              description,
-                                              href='http://docs.example.com/auth',
-                                              scheme='Token; UUID')
-
-            def _token_is_valid(self, token, project):
-                return True  # Suuuuuure it's valid...
-
-            """
-
             case_id = data.get('id', None)
             file_list = data.get('files', None)
             bucket_name = data.get('bucket', None)
@@ -94,7 +69,8 @@ class CompressResources:
                 # compress.process_data(case_id, file_list, bucket_name, base_name)
                 # response ok, task received
                 resp.body = json.dumps(
-                    {"message": "Compression task started, App will be notified via Pubnub when the task is complete"})
+                        {
+                            "message": "Compression task started, App will be notified via Pubnub when the task is complete"})
                 resp.status = falcon.HTTP_200
             else:
                 raise falcon.HTTPBadRequest('Invalid Data',
@@ -114,9 +90,3 @@ app = falcon.API()
 zip_it = CompressResources()
 
 app.add_route('/compress', zip_it)
-
-"""
-if __name__ == '__main__':
-    httpd = simple_server.make_server('0.0.0.0', 8000, app)
-    httpd.serve_forever()
-"""
